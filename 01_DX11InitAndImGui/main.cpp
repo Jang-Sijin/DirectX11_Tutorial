@@ -26,7 +26,7 @@ int main()
 		NULL,
 		NULL,
 		NULL,
-		L"HongLabGraphics", // lpszClassName, L-string
+		L"JangSijin-Graphics", // lpszClassName, L-string
 		NULL
 	};
 
@@ -52,9 +52,10 @@ int main()
 	ShowWindow(hwnd, SW_SHOWDEFAULT);
 	UpdateWindow(hwnd);
 
-	auto example = std::make_unique<Example>(hwnd, width, height, canvasWidth, canvasHeight);
+	auto example{ std::make_unique<Example>(hwnd, width, height, canvasWidth, canvasHeight) };
 	//Example* example = new Example(....);
 
+	// Init IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -73,26 +74,30 @@ int main()
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
+			// 이벤트(Event)
+			// -마우스 버튼 클릭
+			// -마우스 이동
+			// -마우스 버튼 누르기/떼기 등
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		else
 		{
-			// Start the Dear ImGui frame
-			//ImGui_ImplDX11_NewFrame();//TODO: IMGUI 사용
-			//ImGui_ImplWin32_NewFrame();
-			//ImGui::NewFrame();
-			//ImGui::Begin("Background Color");
-			//ImGui::SliderFloat3("RGB(0.0->1.0)", canvasColor, 0.0f, 1.0f);
-			//ImGui::End();
-			//ImGui::Render();
+			// Start the Dear ImGui frame // ImGui 고정 파이프라인
+			ImGui_ImplDX11_NewFrame();//TODO: IMGUI 사용
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("Background Color");
+			ImGui::SliderFloat3("RGB(0.0->1.0)", example->backgroundColor, 0.0f, 1.0f);
+			ImGui::End();
+			ImGui::Render();
 
 			example->Update();
 			example->Render();
 
-			//ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());//TODO: IMGUI 사용
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());//TODO: IMGUI 사용
 
-			// switch the back buffer and the front buffer
+			// switch the back buffer and the front buffer // 스왑체인: 전면 버퍼를 후면 버퍼로 체인지 (더블 버퍼링)
 			example->swapChain->Present(1, 0);
 		}
 	}

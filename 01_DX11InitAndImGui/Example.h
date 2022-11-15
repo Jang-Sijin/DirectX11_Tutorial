@@ -79,7 +79,7 @@ public:
 		swapChainDesc.BufferDesc.Height = height;                 // set the back buffer height
 		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;    // use 32-bit color
 		swapChainDesc.BufferCount = 2;                                   // one back buffer
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 165;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;     // how swap chain is to be used
 		swapChainDesc.OutputWindow = window;                               // the window to be used
@@ -235,16 +235,23 @@ public:
 
 	void Update()
 	{
-		// RGB 테이블: https://www.rapidtables.org/ko/web/color/RGB_Color.html
-		std::vector<Vec4> pixels(canvasWidth * canvasHeight, Vec4{0.0f, 0.0f, 0.0f, 1.0f}); // Vec4{0.8f, 0.8f, 0.8f, 1.0f} : RGB
-		pixels[0 + canvasWidth * 0] = Vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
-		pixels[1 + canvasWidth * 0] = Vec4{ 1.0f, 1.0f, 0.0f, 1.0f };
+		static int i = 0;
 
+		// RGB 테이블: https://www.rapidtables.org/ko/web/color/RGB_Color.html
+		std::vector<Vec4> pixels(canvasWidth * canvasHeight, Vec4{ backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]}); // Vec4{0.8f, 0.8f, 0.8f, 1.0f} : RGB
+
+		pixels[i] = i % 3 == 0 ? Vec4{ 1.0f, 0.0f, 0.0f, 1.0f }
+			: i % 3 == 1 ? Vec4{ 0.0f, 1.0f, 0.0f, 1.0f } 
+			: Vec4{ 0.0f, 0.0f, 1.0f, 1.0f };
+
+		i >= pixels.size() - 1 ? i = 0 : i++;
+
+		// GPU에 있는 Memory를 업데이트한다. // [Bottle neck - 병목] // 가급적 적게 업데이트 되어야 한다.
 		// Update texture buffer
 		D3D11_MAPPED_SUBRESOURCE ms;
-		deviceContext->Map(canvasTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
-		memcpy(ms.pData, pixels.data(), pixels.size() * sizeof(Vec4));
-		deviceContext->Unmap(canvasTexture, NULL);
+		deviceContext->Map(canvasTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); // GPU가 가지고 있는 메모리와 CPU가 가지고 있는 메모리를 Map(대응)을 해준다.
+		memcpy(ms.pData, pixels.data(), pixels.size() * sizeof(Vec4)); // CPU 메모리를 GPU 메모리에 카피
+		deviceContext->Unmap(canvasTexture, NULL); // GPU의 메모리를 닫는다.
 	}
 
 	void Render()
@@ -310,5 +317,5 @@ public:
 	UINT indexCount;	
 
 	int canvasWidth, canvasHeight;
-	float backgroundColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	float backgroundColor[4] { 0.0f, 0.0f, 0.0f, 1.0f };
 };
