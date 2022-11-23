@@ -139,9 +139,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//std::cout << "WM_KEYDOWN " << (int)wParam << std::endl;
 		break;
 	case WM_DESTROY:
-		::PostQuitMessage(0);
+		PostQuitMessage(0);
 		return 0;
 	}
 
-	return ::DefWindowProc(hWnd, msg, wParam, lParam);
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }

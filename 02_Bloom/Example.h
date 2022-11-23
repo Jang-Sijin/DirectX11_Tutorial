@@ -32,10 +32,10 @@ class Image
 public:
 	int width = 0, height = 0, channels = 0;
 	std::vector<Vec4> pixels; // 이미지 처리할 때는 색을 float에 저장하는 것이 더 정밀
-
-	void ReadFromFile(const char* filename);
-	void WritePNG(const char* filename);
-	Vec4& GetPixel(int i, int j);
+public:
+	void ReadFromFile(const char* filename); // 이미지 읽기
+	void WritePNG(const char* filename); // 이미지 .PNG 저장
+	Vec4& GetPixel(int x, int y); // 특정 픽셀의 RGBA 색상을 얻기
 	void BoxBlur5();
 	void GaussianBlur5();
 	void Bloom(const float& th, const int& numRepeat, const float& weight = 1.0f);
@@ -47,7 +47,7 @@ public:
 	Example(HWND window, int width, int height)
 	{
 		// 이미지 읽어들이기
-		image.ReadFromFile("image_1.jpg"); // 컴퓨터 속도가 느리다면 "image_1_360.jpg" 사용
+		image.ReadFromFile("720_sunlight.jpg");
 
 		// 시간 측정
 		const auto start_time = std::chrono::high_resolution_clock::now();
@@ -67,10 +67,23 @@ public:
 		//for(int i = 0; i < 100; i++)
 		//	image.BoxBlur5();
 		
-		//for (int i = 0; i < 100; i++)
+		//for (int i = 0; i < 10; i++)
 		//	image.GaussianBlur5();
 
-		//image.Bloom(0.3f, 1000, 1.0f);// image_1
+		image.Bloom(0.7f, 1000, 0.7f); // 밝은 픽셀 유무, 가우시안 블러 반복횟수, 옵션(원본 이미지 * 블러 이미지)
+
+		// 이미지를 밝게 만들기. (1.2배, 20% 증가)
+		float lightAddValue{ 1.5f };
+		for (int i = 0; i < width * height; i++)
+		{
+			// [clamp → 색상 값 overflow 방지]
+			// Red
+			image.pixels[i].v[0] = std::clamp(image.pixels[i].v[0] * lightAddValue, 0.0f, 1.0f);
+			// Green
+			image.pixels[i].v[1] = std::clamp(image.pixels[i].v[1] * lightAddValue, 0.0f, 1.0f);
+			// Blue
+			image.pixels[i].v[2] = std::clamp(image.pixels[i].v[2] * lightAddValue, 0.0f, 1.0f);
+		}
 
 		const auto elapsed_time = std::chrono::high_resolution_clock::now() - start_time;
 
@@ -294,6 +307,36 @@ public:
 		//image.Blur(7);
 
 		//image.GaussianBlur5();
+
+		//image.Bloom(0.3f, 100, 1.0f);
+
+		// 페이드 아웃 효과
+		//float fadeValue{ 0.005f };
+		//
+		//for(int y = 0; y < image.height; ++y)
+		//for(int x = 0; x < image.width; ++x)
+		//{
+		//	// 화면 좌측 픽셀
+		//	if (x < image.width / 2)
+		//	{
+		//		image.pixels[x + y * image.width].v[0] > 0 ? 
+		//			image.pixels[x + y * image.width].v[0] -= fadeValue : image.pixels[x + y * image.width].v[0] = 0;
+		//		image.pixels[x + y * image.width].v[1] > 0 ?
+		//			image.pixels[x + y * image.width].v[1] -= fadeValue : image.pixels[x + y * image.width].v[1] = 0;
+		//		image.pixels[x + y * image.width].v[2] > 0 ?
+		//			image.pixels[x + y * image.width].v[2] -= fadeValue : image.pixels[x + y * image.width].v[2] = 0;
+		//	}
+		//	// 화면 우측 픽셀
+		//	else
+		//	{
+		//		image.pixels[x + y * image.width].v[0] < 1 ?
+		//			image.pixels[x + y * image.width].v[0] += fadeValue : image.pixels[x + y * image.width].v[0] = 1;
+		//		image.pixels[x + y * image.width].v[1] > 0 ?
+		//			image.pixels[x + y * image.width].v[1] += fadeValue : image.pixels[x + y * image.width].v[1] = 1;
+		//		image.pixels[x + y * image.width].v[2] > 0 ?
+		//			image.pixels[x + y * image.width].v[2] += fadeValue : image.pixels[x + y * image.width].v[2] = 1;
+		//	}
+		//}
 
 		// 이미지의 내용을 GPU 메모리로 복사
 		D3D11_MAPPED_SUBRESOURCE ms;

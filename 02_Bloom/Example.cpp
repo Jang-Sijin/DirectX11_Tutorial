@@ -1,13 +1,13 @@
 ﻿#include "Example.h"
 
-#include <omp.h>
+#include <omp.h> // C 와 C++, FORTRAN에서 병렬프로그램을 가능하게 해주는 API, OpenMP
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include <algorithm> // std::clamp (C++17)
+#include <algorithm> // std::clamp (C++17) // 쉐이더 프로그래밍할 때 많이 사용된다. // 특정 값의 범위를 제한
 
 void Image::ReadFromFile(const char* filename)
 {
@@ -34,13 +34,17 @@ void Image::ReadFromFile(const char* filename)
 	pixels.resize(width * height);
 	for (int i = 0; i < width * height; i ++)
 	{
+		// Red
 		pixels[i].v[0] = img[i * channels] / 255.0f;
+		// Green
 		pixels[i].v[1] = img[i * channels +1] / 255.0f;
+		// Blue
 		pixels[i].v[2] = img[i * channels +2] / 255.0f;
+		// Alpha
 		pixels[i].v[3] = 1.0f;
 	}
 
-	delete [] img;
+	delete[] img;
 }
 
 void Image::WritePNG(const char* filename)
@@ -58,12 +62,12 @@ void Image::WritePNG(const char* filename)
 	stbi_write_png(filename, width, height, channels, img.data(), width * channels);
 }
 
-Vec4& Image::GetPixel(int i, int j)
+Vec4& Image::GetPixel(int x, int y)
 {
-	i = std::clamp(i, 0, this->width - 1);
-	j = std::clamp(j, 0, this->height - 1);
+	x = std::clamp(x, 0, this->width - 1);
+	y = std::clamp(y, 0, this->height - 1);
 
-	return this->pixels[i + this->width * j];
+	return this->pixels[x + this->width * y];
 }
 
 void Image::BoxBlur5()
@@ -78,12 +82,25 @@ void Image::BoxBlur5()
 
 	// 가로 방향 (x 방향)
 #pragma omp parallel for
-	for (int j = 0; j < this->height; j++)
+	for (int y = 0; y < this->height; y++)
 	{
-		for (int i = 0; i < this->width; i++)
-		{
+		for (int x = 0; x < this->width; x++)
+		{			
+			Vec4 neighborColorSum{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 			// 주변 픽셀들의 색을 평균내어서 (i, j)에 있는 픽셀의 색을 변경
 			// this->pixels로부터 읽어온 값들을 평균내어서 pixelsBuffer의 값들을 바꾸기
+			for (int i = 0; i < 5; ++i)
+			{
+				Vec4 neighborColor = this->GetPixel(x + i - 2, y);
+				neighborColorSum.v[0] += neighborColor.v[0];
+				neighborColorSum.v[1] += neighborColor.v[1];
+				neighborColorSum.v[2] += neighborColor.v[2];
+			}
+
+			pixelsBuffer[x + this->width * y].v[0] = neighborColorSum.v[0] * 0.2f;
+			pixelsBuffer[x + this->width * y].v[1] = neighborColorSum.v[1] * 0.2f;
+			pixelsBuffer[x + this->width * y].v[2] = neighborColorSum.v[2] * 0.2f;
 		}
 	}
 
@@ -94,12 +111,25 @@ void Image::BoxBlur5()
 
 	// 세로 방향 (y 방향)
 #pragma omp parallel for
-	for (int j = 0; j < this->height; j++)
+	for (int y = 0; y < this->height; y++)
 	{
-		for (int i = 0; i < this->width; i++)
+		for (int x = 0; x < this->width; x++)
 		{
+			Vec4 neighborColorSum{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 			// 주변 픽셀들의 색을 평균내어서 (i, j)에 있는 픽셀의 색을 변경
 			// this->pixels로부터 읽어온 값들을 평균내어서 pixelsBuffer의 값들을 바꾸기
+			for (int i = 0; i < 5; ++i)
+			{
+				Vec4 neighborColor = this->GetPixel(x, y + i - 2);
+				neighborColorSum.v[0] += neighborColor.v[0];
+				neighborColorSum.v[1] += neighborColor.v[1];
+				neighborColorSum.v[2] += neighborColor.v[2];
+			}
+
+			pixelsBuffer[x + this->width * y].v[0] = neighborColorSum.v[0] * 0.2f;
+			pixelsBuffer[x + this->width * y].v[1] = neighborColorSum.v[1] * 0.2f;
+			pixelsBuffer[x + this->width * y].v[2] = neighborColorSum.v[2] * 0.2f;
 		}
 	}
 
@@ -120,13 +150,25 @@ void Image::GaussianBlur5()
 
 	// 가로 방향 (x 방향)
 #pragma omp parallel for
-	for (int j = 0; j < this->height; j++)
+	for (int y = 0; y < this->height; y++)
 	{
-		for (int i = 0; i < this->width; i++)
+		for (int x = 0; x < this->width; x++)
 		{
+			Vec4 neighborColorSum{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 			// 주변 픽셀들의 색을 평균내어서 (i, j)에 있는 픽셀의 색을 변경
 			// this->pixels로부터 읽어온 값들을 평균내어서 pixelsBuffer의 값들을 바꾸기
+			for (int i = 0; i < 5; ++i)
+			{
+				Vec4 neighborColor = this->GetPixel(x + i - 2, y);
+				neighborColorSum.v[0] += neighborColor.v[0] * weights[i];
+				neighborColorSum.v[1] += neighborColor.v[1] * weights[i];
+				neighborColorSum.v[2] += neighborColor.v[2] * weights[i];
+			}
 
+			pixelsBuffer[x + (y * this->width)].v[0] = neighborColorSum.v[0];
+			pixelsBuffer[x + (y * this->width)].v[1] = neighborColorSum.v[1];
+			pixelsBuffer[x + (y * this->width)].v[2] = neighborColorSum.v[2];
 		}
 	}
 
@@ -135,13 +177,25 @@ void Image::GaussianBlur5()
 
 	// 세로 방향 (y 방향)
 #pragma omp parallel for
-	for (int j = 0; j < this->height; j++)
+	for (int y = 0; y < this->height; y++)
 	{
-		for (int i = 0; i < this->width; i++)
+		for (int x = 0; x < this->width; x++)
 		{
+			Vec4 neighborColorSum{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 			// 주변 픽셀들의 색을 평균내어서 (i, j)에 있는 픽셀의 색을 변경
 			// this->pixels로부터 읽어온 값들을 평균내어서 pixelsBuffer의 값들을 바꾸기
+			for (int i = 0; i < 5; ++i)
+			{
+				Vec4 neighborColor = this->GetPixel(x, y + i - 2);
+				neighborColorSum.v[0] += neighborColor.v[0] * weights[i];
+				neighborColorSum.v[1] += neighborColor.v[1] * weights[i];
+				neighborColorSum.v[2] += neighborColor.v[2] * weights[i];
+			}
 
+			pixelsBuffer[x + (y * this->width)].v[0] = neighborColorSum.v[0];
+			pixelsBuffer[x + (y * this->width)].v[1] = neighborColorSum.v[1];
+			pixelsBuffer[x + (y * this->width)].v[2] = neighborColorSum.v[2];
 		}
 	}
 
@@ -155,31 +209,42 @@ void Image::Bloom(const float& th, const int& numRepeat, const float& weight)
 
 	const std::vector<Vec4> pixelsBackup = this->pixels;// 메모리 내용물까지 모두 복사
 
-	/* Brightness가 th 보다 작은 픽셀들을 모두 검은색으로 바꾸기
+	/* 1. Brightness가 th 보다 작은 픽셀들을 모두 검은색으로 바꾸기
 	* https://en.wikipedia.org/wiki/Relative_luminance
 	* Relative Luminance Y = 0.2126*R + 0.7152*G + 0.0722*B
 	*/
-	for (int j = 0; j < height; j ++)
-		for (int i = 0; i < width; i++)
-		{
+	for (int y = 0; y < height; ++y)
+		for (int x = 0; x < width; ++x)
+		{			
+			auto& elementPixcelColor = GetPixel(x, y);
+			const float relativeLuminance = elementPixcelColor.v[0] * 0.2126f + elementPixcelColor.v[1] * 0.7152f + elementPixcelColor.v[2] * 0.0722f;
 
-
+			if (relativeLuminance < th)
+			{
+				// r
+				elementPixcelColor.v[0] = 0;
+				// g
+				elementPixcelColor.v[1] = 0;
+				// b
+				elementPixcelColor.v[2] = 0;
+			}
 		}
 
 	// 여기서 Blur하지 않고 결과 확인
 
-	// 밝은 부분만 Blur 
+	// 2. 밝은 부분만 Blur 
 	for (int i = 0; i < numRepeat; i++)
 	{
-		
+		this->GaussianBlur5();
 	}
 
 	// 여기서 또 한 번 결과 확인
 
-	// 밝은 부분만 Blur한 것과 원본 이미지를 더하기 (밝은 부분 Blur에 weight 곱해서 강도 조절)
+	// 3. 밝은 부분만 Blur한 것과 원본 이미지를 더하기 (밝은 부분 Blur에 weight 곱해서 강도 조절)
 	for (int i = 0; i < pixelsBackup.size(); i++)
 	{
-		
-
+		this->pixels[i].v[0] = std::clamp(pixels[i].v[0] * weight + pixelsBackup[i].v[0], 0.0f, 1.0f);
+		this->pixels[i].v[1] = std::clamp(pixels[i].v[1] * weight + pixelsBackup[i].v[1], 0.0f, 1.0f);
+		this->pixels[i].v[2] = std::clamp(pixels[i].v[2] * weight + pixelsBackup[i].v[2], 0.0f, 1.0f);
 	}
 }

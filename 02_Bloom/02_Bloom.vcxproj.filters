@@ -31,21 +31,4 @@
     <FxCompile Include="PS.hlsl" />
     <FxCompile Include="VS.hlsl" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="image_1.JPG">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="image_1_360.JPG">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="image_2.JPG">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="image_2_360.JPG">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="image_3.JPG">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
 </Project>
