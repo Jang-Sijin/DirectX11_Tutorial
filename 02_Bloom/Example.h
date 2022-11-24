@@ -73,7 +73,7 @@ public:
 		image.Bloom(0.7f, 1000, 0.7f); // 밝은 픽셀 유무, 가우시안 블러 반복횟수, 옵션(원본 이미지 * 블러 이미지)
 
 		// 이미지를 밝게 만들기. (1.2배, 20% 증가)
-		float lightAddValue{ 1.5f };
+		float lightAddValue{ 1.2f };
 		for (int i = 0; i < width * height; i++)
 		{
 			// [clamp → 색상 값 overflow 방지]

@@ -26,7 +26,7 @@ int main()
 		NULL,
 		NULL,
 		NULL,
-		L"HongLabGraphics", // lpszClassName, L-string
+		L"SJ", // lpszClassName, L-string
 		NULL
 	};
 
@@ -38,7 +38,7 @@ int main()
 
 	HWND hwnd = CreateWindow(
 		wc.lpszClassName,
-		L"HongLabGraphics Example",
+		L"SJ Example",
 		WS_OVERLAPPEDWINDOW,
 		100, // 윈도우 좌측 상단의 x 좌표
 		100, // 윈도우 좌측 상단의 y 좌표
