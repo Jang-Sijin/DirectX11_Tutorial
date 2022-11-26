@@ -62,7 +62,7 @@ namespace hlab
 
 					// 광선의 방향 벡터
 					// 스크린에 수직인 z방향, 절대값 1.0인 유닉 벡터
-					// Orthographic projection (정투영) vs perspective projection (원근투영)
+					// Orthographic projection (정투영) vs perspective projection (원근투영)				
 					const auto rayDir = vec3(0.0f, 0.0f, 1.0f);
 
 					Ray pixelRay{pixelPosWorld, rayDir};

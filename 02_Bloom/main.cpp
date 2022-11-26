@@ -77,14 +77,14 @@ int main()
 		else
 		{
 			// Start the Dear ImGui frame
-			//ImGui_ImplDX11_NewFrame();//TODO: IMGUI 사용
-			//ImGui_ImplWin32_NewFrame();
-			//ImGui::NewFrame();
-			//ImGui::Begin("Background Color");
-			//float canvasColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };// Dummy
-			//ImGui::SliderFloat3("RGB(0.0->1.0)", canvasColor, 0.0f, 1.0f);
-			//ImGui::End();
-			//ImGui::Render();
+			ImGui_ImplDX11_NewFrame();//TODO: IMGUI 사용
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("Background Color");
+			float canvasColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };// Dummy
+			ImGui::SliderFloat3("RGB(0.0->1.0)", canvasColor, 0.0f, 1.0f);
+			ImGui::End();
+			ImGui::Render();
 
 			example->Update();
 			example->Render();

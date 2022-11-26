@@ -47,7 +47,7 @@ public:
 	Example(HWND window, int width, int height)
 	{
 		// 이미지 읽어들이기
-		image.ReadFromFile("720_sunlight.jpg");
+		image.ReadFromFile("720_sunlight1.jpg");
 
 		// 시간 측정
 		const auto start_time = std::chrono::high_resolution_clock::now();
@@ -142,7 +142,7 @@ public:
 		swapChainDesc.BufferDesc.Height = height;                 // set the back buffer height
 		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;    // use 32-bit color
 		swapChainDesc.BufferCount = 2;                                   // one back buffer
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 165;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;     // how swap chain is to be used
 		swapChainDesc.OutputWindow = window;                               // the window to be used
