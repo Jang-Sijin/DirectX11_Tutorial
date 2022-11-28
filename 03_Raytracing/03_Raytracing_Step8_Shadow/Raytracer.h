@@ -38,18 +38,25 @@ namespace hlab
 
 			objects.push_back(sphere1);
 
-			auto triangle1 = make_shared<Triangle>(vec3(-2.0f, -1.0f, 0.0f), vec3(-2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 4.0f));
-			auto triangle2 = make_shared<Triangle>(vec3(-2.0f, -1.0f, 0.0f), vec3(2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 0.0f));
-			triangle1->amb = vec3(0.2f);
-			triangle1->dif = vec3(0.8f);
-			triangle1->spec = vec3(1.0f);
-			triangle1->alpha = 50.0f;
-			triangle2->amb = vec3(0.2f);
-			triangle2->dif = vec3(0.8f);
-			triangle2->spec = vec3(1.0f);
-			triangle2->alpha = 50.0f;
-			objects.push_back(triangle1);
-			objects.push_back(triangle2);
+			//auto triangle1 = make_shared<Triangle>(vec3(-2.0f, -1.0f, 0.0f), vec3(-2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 4.0f));
+			//auto triangle2 = make_shared<Triangle>(vec3(-2.0f, -1.0f, 0.0f), vec3(2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 0.0f));
+			//triangle1->amb = vec3(0.2f);
+			//triangle1->dif = vec3(0.8f);
+			//triangle1->spec = vec3(1.0f);
+			//triangle1->alpha = 50.0f;
+			//triangle2->amb = vec3(0.2f);
+			//triangle2->dif = vec3(0.8f);
+			//triangle2->spec = vec3(1.0f);
+			//triangle2->alpha = 50.0f;
+			//objects.push_back(triangle1);
+			//objects.push_back(triangle2);
+
+			auto ground = make_shared<Square>(vec3(-2.0f, -1.0f, 0.0f), vec3(-2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 4.0f), vec3(2.0f, -1.0f, 0.0f));
+			ground->amb = vec3(0.2f);
+			ground->dif = vec3(0.2f);
+			ground->spec = vec3(0.2f);
+			ground->alpha = 50.0f;
+			objects.push_back(ground);
 
 			light = Light{{0.0f, 1.0f, 0.2f}}; // 화면 뒷쪽
 		}
@@ -85,15 +92,25 @@ namespace hlab
 
 			if (hit.d >= 0.0f)
 			{
-				// Diffuse
+				glm::vec3 color(hit.obj->amb);
+
+				// Render first hit 충돌한 위치에서 빛의 방향으로의 노말 값을 설정
 				const vec3 dirToLight = glm::normalize(light.pos - hit.point);
-				const float diff = glm::max(dot(hit.normal, dirToLight), 0.0f);
 
-				// Specular
-				const vec3 reflectDir = 2.0f * dot(hit.normal, dirToLight) * hit.normal - dirToLight;
-				const float specular = glm::pow(glm::max(glm::dot(-ray.dir, reflectDir), 0.0f), hit.obj->alpha);
+				Ray shadowRay = { hit.point + dirToLight * 1e-4f, dirToLight };
 
-				return hit.obj->amb + hit.obj->dif * diff + hit.obj->spec * specular;
+				if (FindClosestCollision(shadowRay).d < 0.0f || FindClosestCollision(shadowRay).d > glm::length(light.pos - hit.point))
+				{
+					// Diffuse
+					const float diff = glm::max(dot(hit.normal, dirToLight), 0.0f);					
+					// Specular
+					const vec3 reflectDir = 2.0f * dot(hit.normal, dirToLight) * hit.normal - dirToLight;
+					const float specular = glm::pow(glm::max(glm::dot(-ray.dir, reflectDir), 0.0f), hit.obj->alpha);
+
+					color += hit.obj->dif * diff + hit.obj->spec * specular;
+				}
+
+				return color;
 			}
 
 			return vec3(0.0f);

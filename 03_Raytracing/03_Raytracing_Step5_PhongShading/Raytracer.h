@@ -52,13 +52,13 @@ namespace hlab
 				// https://en.wikipedia.org/wiki/Phong_reflection_model
 				// https://www.scratchapixel.com/lessons/3d-basic-rendering/phong-shader-BRDF
 
-				// Diffuse
-				// const vec3 dirToLight = ...
-				const float diff = 1.0f;
+				// Diffused		
+				const vec3 dirToLight = glm::normalize(light.pos - hit.point);
+				const float diff = glm::max(glm::dot(hit.normal, dirToLight), 0.0f);
 
 				// Specular
-				// const vec3 reflectDir = ... // r = 2 (n dot l) n - l
-				const float specular = 1.0f;
+				const vec3 reflectDir = 2.0f * glm::dot(hit.normal, dirToLight) * hit.normal - dirToLight; // r = 2 (n dot l) n - l
+				const float specular = glm::pow(glm::max(glm::dot(-ray.dir, reflectDir), 0.0f), sphere->alpha);
 
 				return sphere->amb + sphere->diff * diff + sphere->spec * specular * sphere->ks;
 				// return sphere->diff * diff;

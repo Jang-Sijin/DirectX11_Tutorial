@@ -54,7 +54,8 @@ namespace hlab
 
 		Hit FindClosestCollision(Ray& ray)
 		{
-			Hit closest_hit = Hit{ -1.0, dvec3(0.0), dvec3(0.0) };
+			float closestD = INT_MAX; // inf
+			Hit closesthit = Hit{ -1.0, dvec3(0.0), dvec3(0.0) };
 
 			for (int l = 0; l < objects.size(); l++)
 			{
@@ -62,12 +63,16 @@ namespace hlab
 
 				if (hit.d >= 0.0f)
 				{
-					hit.obj = objects[l];
-					return hit;
+					if (hit.d < closestD)
+					{
+						closestD = hit.d;
+						closesthit = hit;
+						closesthit.obj = objects[l];
+					}
 				}
 			}
 
-			return closest_hit;
+			return closesthit;
 		}
 
 		// 광선이 물체에 닿으면 그 물체의 색 반환
@@ -108,8 +113,9 @@ namespace hlab
 					// 스크린에 수직인 z방향, 절대값 1.0인 유닉 벡터
 					// Orthographic projection (정투영) vs perspective projection (원근투영)
 
+
 					const auto rayDir = vec3(0.0f, 0.0f, 1.0f);
-					Ray pixelRay{ pixelPosWorld, rayDir };
+					Ray pixelRay{ pixelPosWorld, glm::normalize(pixelPosWorld - eyePos) };
 
 					pixels[i + width * j] = vec4(glm::clamp(traceRay(pixelRay), 0.0f, 1.0f), 1.0f);
 				}

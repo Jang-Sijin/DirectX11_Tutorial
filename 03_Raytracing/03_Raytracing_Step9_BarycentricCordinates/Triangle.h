@@ -99,15 +99,16 @@ namespace hlab
             // 텍스춰링(texturing)에서 사용
             // 아래에서 cross product의 절대값으로 작은 삼각형들의 넓이 계산
 
-            // const float area0 = ...
-            // const float area1 = ...
-            // const float area2 = ...
+            const float area0 = glm::length(cross0) * 0.5f;
+            const float area1 = glm::length(cross1) * 0.5f;
+            const float area2 = glm::length(cross2) * 0.5f;
 
-            // const float areaSum = ...
+            const float areaSum = area0 + area1 + area2;
 
             // 기호에 alpha, beta, gamma 또는 u, v, w 등을 사용하기도 함
-            w0 = 0.0f; //임시 값
-            w1 = 0.0f; //임시 값
+            w0 = area0 / areaSum;
+            w1 = area1 / areaSum;
+            // w2 = area2 / areaSum; 또는 w2 =  1.0f - w0 - w1;
 
             return true;
         }
