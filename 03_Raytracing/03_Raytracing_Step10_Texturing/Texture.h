@@ -59,9 +59,10 @@ namespace hlab
 			const vec3 &c01,
 			const vec3 &c11)
 		{
-			// ...
+			vec3 a = c00 * (1.0f - dx) + c10 * dx;
+			vec3 b = c01 * (1.0f - dx) + c11 * dx;
 
-			return vec3(1.0f);
+			return a * (1.0f - dy) + b * dy;
 		}
 
 		vec3 SamplePoint(const vec2 &uv) // Nearest sampling이라고 부르기도 함
@@ -70,12 +71,12 @@ namespace hlab
 			// 이미지 좌표의 범위 xy [-0.5, width - 1 + 0.5] x [-0.5, height - 1 + 0.5]
 			// 배열 인덱스의 정수 범위 ij [0, width-1] x [0, height - 1]
 
-			// vec2 xy = ...;
-			// int i = ...;
-			// int j = ...;
+			vec2 xy = uv * vec2((static_cast<float>(width), static_cast<float>(height))) - vec2(0.5f);
+			int i = glm::round(xy.x);
+			int j = glm::round(xy.y);
 
-			// return GetClamped(i, j);
-			return GetClamped(0, 0);
+			return GetClamped(i, j);
+			// return GetClamped(0, 0);
 		}
 
 		vec3 SampleLinear(const vec2 &uv)
@@ -84,14 +85,14 @@ namespace hlab
 			// 이미지 좌표의 범위 xy [-0.5, width - 1 + 0.5] x [-0.5, height - 1 + 0.5]
 			// std::cout << floor(-0.3f) << " " << int(-0.3f) << std::endl; // -1 0
 
-			// const vec2 xy = ...;
-			// const int i = ...;
-			// const int j = ...;
-			// const float dx = ...;
-			// const float dy = ...;
+			const vec2 xy = uv * vec2(width, height) - vec2(0.5f);
+			const int i = static_cast<int>(glm::floor(xy.x));
+			const int j = static_cast<int>(glm::floor(xy.y));
+			const float dx = xy.x - float(i);
+			const float dy = xy.y - float(j);
 
-			// return InterpolateBilinear(dx, dy, GetClamped(i, j), GetClamped(i + 1, j), GetClamped(i, j + 1), GetClamped(i + 1, j + 1));
-			return vec3(1.0f);
+			return InterpolateBilinear(dx, dy, GetClamped(i, j), GetClamped(i + 1, j), GetClamped(i, j + 1), GetClamped(i + 1, j + 1));
+			// return vec3(1.0f);
 		}
 	};
 }

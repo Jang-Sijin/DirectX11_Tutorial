@@ -59,8 +59,8 @@ namespace hlab
 					}
 				}
 
-			auto imageTexture = std::make_shared<Texture>(4, 4, textureImage);
-			// auto imageTexture = std::make_shared<Texture>("shadertoy_abstract1.jpg");
+			//auto imageTexture = std::make_shared<Texture>(4, 4, textureImage);
+			auto imageTexture = std::make_shared<Texture>("shadertoy_abstract1.jpg");
 
 			auto square = make_shared<Square>(vec3(-2.0f, 2.0f, 2.0f), vec3(2.0f, 2.0f, 2.0f), vec3(2.0f, -2.0f, 2.0f), vec3(-2.0f, -2.0f, 2.0f),
 											  vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(1.0f, 1.0f), vec2(0.0f, 1.0f));
@@ -70,7 +70,7 @@ namespace hlab
 			square->spec = vec3(0.0f);
 
 			square->ambTexture = imageTexture;
-			// square->difTexture = imageTexture;
+			square->difTexture = imageTexture;
 
 			objects.push_back(square);
 
@@ -115,7 +115,7 @@ namespace hlab
 				// Ambient
 				if (hit.obj->ambTexture)
 				{
-					pointColor = hit.obj->amb * hit.obj->ambTexture->SamplePoint(hit.uv);
+					pointColor = hit.obj->amb * hit.obj->ambTexture->SampleLinear(hit.uv);
 				}
 				else
 				{
